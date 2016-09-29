@@ -11,14 +11,10 @@
 #include "droneCommandHandler.h"
 #include "udpClientSocket.h"
 #include "udpServerSocket.h"
-//#include "parrot.h"
-//#include "utilities.h"
 
 typedef struct DRONE_SOCKET_HANDLES {
     void *senderHandle;
     void *receiverHandle;
-    void *rtpHandle;
-    void *rtcpHandle;
 }DRONE_SOCKET_HANDLES;
 
 void *initDroneComm(char *droneIp, uint16_t commandPort, uint16_t receiverPort, RECEIVER_CB receiverCallback) {
