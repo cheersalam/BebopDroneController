@@ -115,7 +115,7 @@ set(PROJECT_LIBS ${CONTROLLER_LIB} ${JSON_PARSER_LIB} ${SOCK_LIB} )
 # Adding colors 
 #------------------------------------------------------------------------------
 set(CMAKE_COLOR_MAKEFILE ON)
-set(CMAKE_VERBOSE_MAKEFILE ON)
+set(CMAKE_VERBOSE_MAKEFILE OFF)
 
 #------------------------------------------------------------------------------
 # Sub Directories 

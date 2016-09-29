@@ -14,23 +14,16 @@
 #include "socklibCommon.h"
 #include "droneHandshake.h"
 #include "droneCommandHandler.h"
+#include "droneVideoStreamHandler.h"
 #include "parrot.h"
 #include "utilities.h"
 
 #define MAX_RTP_FRAME_LEN (5 * 1024 * 1024)
 
 static void streamData(unsigned char *buffer, int32_t bufLen);
-static void saveClip(unsigned char *buffer, int32_t bufLen, int64_t durationMsec);
 static void rtpData(unsigned char *buffer, int32_t bufLen);
 static void rtcpData(unsigned char *buffer, int32_t bufLen);
-static void parseRTPHeader(unsigned char *buffer, int32_t bufLen);
 
-static unsigned char rtpFrame[MAX_RTP_FRAME_LEN];
-static uint32_t rtpFrameLen = 0;
-static uint16_t rtpLastSeq = 0;
-static uint32_t rtpLastTimestamp = 0;
-static uint16_t rtpMarkerPos = 0x0080;
-static int32_t dropPacket = 0;
 
 typedef struct GLOBALARGS_T{
 	int32_t enableHls;		// -h enable HLS streaming
@@ -65,8 +58,6 @@ static struct option longOptions[] = {
 	{ NULL, no_argument, NULL, 0 }
 };
 
-
-//only globals
 static volatile int32_t startExit = 0;
 void *droneHandle = NULL;
 void *vcg = NULL;
@@ -93,6 +84,7 @@ void initSignals(void) {
 void printSettings(GLOBALARGS_T *globalArgs) {
 	printf("Drone IP address   		= %s\n", globalArgs->ipAddress);
 	printf("Drone command port 		= %hu\n", globalArgs->port);
+#if 0
 	printf("Enable HLS    			= %d\n", globalArgs->enableHls);
 	printf("Enable FileSave    		= %d\n", globalArgs->enableFileSave);
 	printf("Enable Display    		= %d\n", globalArgs->enableDisplay);
@@ -101,6 +93,7 @@ void printSettings(GLOBALARGS_T *globalArgs) {
 	printf("Video File path    		= %s\n", globalArgs->outputFilePath);
 	printf("Playlist file prefix	= %s\n", globalArgs->playlistFileName);
 	printf("Playlist file path 		= %s\n", globalArgs->playlistFilePath);
+#endif
 }
 
 void printUsage() {
@@ -108,12 +101,10 @@ void printUsage() {
 }
 
 int32_t main(int argc, char **argv) {
-	int32_t err = 0;
 	int32_t c = 0;
 	void *handshakeHandle = NULL;
+    void *streamHandle = NULL;
 	HANDSHAKE_DATA_T handshakeData = { 0 };
-	char *droneIp = "192.168.42.1";
-	uint32_t dronePort = 44444;
 
 	globalArgs.ipAddress = "192.168.42.1";
 	globalArgs.port = 44444;
@@ -221,22 +212,27 @@ int32_t main(int argc, char **argv) {
 		return 0;
 	}
 
+   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
+	if (NULL == streamHandle) {
+		printf("Drone will not receive video stream. Exit\n");
+	}
 
 	while (!startExit) {
 		sleep(1);
 	}
 
+//    closeDroneComm(droneHandle);
+//    closeVideoStreams(streamHandle);
+
 }
 
 static void streamData(unsigned char *buffer, int32_t bufLen) {
 	int32_t pos = 0;
-	int32_t err = 0;
 	uint32_t bufferId = 0;
 	uint32_t seqNum = 0;
 	uint32_t size = 0;
 	uint32_t frameNum = 0;
 	PARROT_DATA_TYPES dataType = 0;
-	static int frameCount = 0;
 	//printf("stream data received len = %d\n", bufLen);
 	if (NULL == buffer) {
 		return;
@@ -278,4 +274,12 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
 	}
 }
 
+
+static void rtpData(unsigned char *buffer, int32_t bufLen) {
+//    printf("RTP Data: %d\n", bufLen);
+}
+
+static void rtcpData(unsigned char *buffer, int32_t bufLen) {
+  //  printf("RTCP data received %d\n", bufLen);
+}
 
