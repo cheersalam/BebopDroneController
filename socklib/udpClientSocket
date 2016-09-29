@@ -1,0 +1,154 @@
+/*
+ * Copyright © 2016 Mohammad Alam <cheersalam@gmail.com>
+ */
+
+#include "udpClientSocket.h"
+#include <assert.h>
+#include <pthread.h>
+
+#define MAX_RECV_BUF_LEN (1024 * 1024)
+
+typedef struct UDP_CLIENT_SOCKET_T {
+    char 		*host;
+    uint16_t 		port;
+    int32_t 		fd;
+    struct sockaddr_in 	serveraddr;
+    struct hostent 	*server;
+    pthread_t   	threadId;
+    int32_t 		isRunning;
+    struct sockaddr 	*servAddr;
+    socklen_t 		servAddrLen;
+    RECEIVER_CB 	callback;
+}UDP_CLIENT_SOCKET_T;
+
+static void *clientThread(void *data);
+
+void *initUdpClientSocket(uint16_t port, char *host, RECEIVER_CB callback) {
+    int32_t err 			= 0;
+    int sockfd 				= 0;
+    UDP_CLIENT_SOCKET_T *udpSocketData 	= NULL;
+    char portStr[64]			= {0};
+    socklen_t salen;
+    struct sockaddr *sa;
+    struct addrinfo hints, *servinfo, *saveInfo;
+
+    printf("%s:%s:%d\n", __FILE__, __func__, __LINE__);
+    assert(host);
+    udpSocketData = (UDP_CLIENT_SOCKET_T*)malloc(sizeof(UDP_CLIENT_SOCKET_T));
+    if (NULL == udpSocketData) {
+        printf("ERROR malloc error\n");
+        return NULL;
+    }
+
+    memset(udpSocketData, 0, sizeof(UDP_CLIENT_SOCKET_T));
+
+    /*initilize addrinfo structure*/
+    memset(&hints, 0, sizeof(struct addrinfo));  
+    hints.ai_family=AF_UNSPEC;
+    hints.ai_socktype=SOCK_DGRAM;
+    hints.ai_protocol=IPPROTO_UDP;
+
+    snprintf(portStr, sizeof(portStr), "%d", port);
+    if((err = getaddrinfo(host, portStr, &hints, &servinfo)) != 0) {
+    	printf("udpclient error for %s, %s: %s", host, portStr, gai_strerror(err));	
+	free(udpSocketData);
+	return NULL;
+    }
+
+    saveInfo = servinfo;
+    do{
+       sockfd = socket(servinfo->ai_family, servinfo->ai_socktype, servinfo->ai_protocol);
+    	if(sockfd >= 0)
+      	   break; /*success*/
+    }while ((servinfo = servinfo->ai_next) != NULL);
+
+    sa = malloc(servinfo->ai_addrlen);
+    memcpy(sa, servinfo->ai_addr, servinfo->ai_addrlen);
+    salen = servinfo->ai_addrlen;
+
+    freeaddrinfo(saveInfo);
+
+    udpSocketData->port = port;
+    udpSocketData->host = host;
+    udpSocketData->callback = callback;
+    udpSocketData->fd = sockfd;
+    udpSocketData->servAddr = sa;
+    udpSocketData->servAddrLen = salen;
+
+    err = pthread_create(&udpSocketData->threadId, NULL, clientThread, (void *)udpSocketData);
+    if (err) {
+        printf("ERROR thread creation failed\n");
+        close(udpSocketData->fd);
+        free(udpSocketData);
+        return NULL;
+    }
+    return udpSocketData;
+}
+
+static void *clientThread(void *args) {
+    UDP_CLIENT_SOCKET_T *udpSocketData = args;
+    int32_t nBytes = 0;
+    uint32_t addrSize = 0;
+    unsigned char buffer[MAX_RECV_BUF_LEN];
+
+    addrSize = sizeof(udpSocketData->serveraddr);
+    udpSocketData->isRunning = 1;
+    printf("UDP client socket Waiting for new messages from %s on port %d\n", udpSocketData->host, udpSocketData->port);
+    while (udpSocketData->isRunning) {
+        nBytes = recvfrom(udpSocketData->fd, buffer, MAX_RECV_BUF_LEN, 0, NULL, NULL);
+        if (nBytes < 0) {
+            printf("ERROR in recvfrom\n");
+        }
+        printf("UDP Client socket Bytes Received = %d\n", nBytes);
+
+        if (udpSocketData->callback) {
+            printf("UDP client socket receiver callback not set, dropping packets\n");
+            udpSocketData->callback(buffer, nBytes);
+        }
+    }
+    printf("Exiting thread UDP Client\n ");
+    pthread_exit(NULL);
+}
+
+int32_t sendClientUdpData(void *handle, unsigned char *buffer, int32_t bufLen) {
+    int32_t addrSize = 0;
+    int32_t nBytes;
+    UDP_CLIENT_SOCKET_T *udpSocketData = handle;
+
+    //printf("%s:%s:%d\n", __FILE__, __func__, __LINE__);
+    if (NULL == buffer) {
+        return 0;
+    }
+
+    addrSize = sizeof(udpSocketData->serveraddr);
+    nBytes = sendto(udpSocketData->fd, buffer, bufLen, 0, udpSocketData->servAddr, udpSocketData->servAddrLen);
+    if (nBytes < 0) {
+        printf("ERROR in sendto\n");
+        return 0;
+    }
+    //printf("Command sent \n");
+    return nBytes;
+}
+
+int32_t isUdpClientRunning(void *handle) {
+    if (NULL == handle) {
+        return 0;
+    }
+    UDP_CLIENT_SOCKET_T *udpSocketData = handle;
+    return udpSocketData->isRunning;
+}
+
+int32_t closeUdpClient(void *handle) {
+    if (NULL == handle) {
+        return 0;
+    }
+    UDP_CLIENT_SOCKET_T *udpSocketData = handle;
+    if (udpSocketData->isRunning) {
+        udpSocketData->isRunning = 0;
+        pthread_join(udpSocketData->threadId, NULL);
+        close(udpSocketData->fd);
+        free(udpSocketData);
+    }
+    return 1;
+}
+
