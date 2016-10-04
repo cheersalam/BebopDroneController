@@ -211,12 +211,12 @@ int32_t main(int argc, char **argv) {
 		printf("initDroneComm failed. Exit\n");
 		return 0;
 	}
-
+#if 0
    streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
 	if (NULL == streamHandle) {
 		printf("Drone will not receive video stream. Exit\n");
 	}
-
+#endif
 	while (!startExit) {
 		sleep(1);
 	}
