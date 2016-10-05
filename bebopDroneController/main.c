@@ -217,6 +217,13 @@ int32_t main(int argc, char **argv) {
 		printf("Drone will not receive video stream. Exit\n");
 	}
 #endif
+
+    err = startVideoStreaming(droneHandle);
+    if (err < 0) {
+        printf("Start Video Streaming command failed. Exit\n");
+        return 1;
+    }
+
 	while (!startExit) {
 		sleep(1);
 	}
