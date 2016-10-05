@@ -72,13 +72,13 @@ void *initTcpClientSocket(uint16_t port, char *hostname, RECEIVER_CB callback) {
     }
 
     if(tcpSocketData->callback) {
-    	err = pthread_create(&tcpSocketData->threadId, NULL, clientThread, (void *)tcpSocketData);
-    	if (err) {
-    		printf("ERROR thread creation failed\n");
-    		close(tcpSocketData->fd);
-    		free(tcpSocketData);
-    		return NULL;
-    	}
+        err = pthread_create(&tcpSocketData->threadId, NULL, clientThread, (void *)tcpSocketData);
+        if (err) {
+            printf("ERROR thread creation failed\n");
+            close(tcpSocketData->fd);
+            free(tcpSocketData);
+            return NULL;
+        }
     }
     return tcpSocketData;
 }
@@ -100,8 +100,8 @@ void *clientThread(void *args) {
             tcpSocketData->isRunning = 0;
         }
         else {
-        	tcpSocketData->callback(buffer, nBytes);
-        	printf("%s:%s:%d TCP clientThread Bytes Received = %d\n", __FILE__, __func__, __LINE__, nBytes );
+            tcpSocketData->callback(buffer, nBytes);
+            printf("%s:%s:%d TCP clientThread Bytes Received = %d\n", __FILE__, __func__, __LINE__, nBytes );
         }
     }
     pthread_exit(NULL);

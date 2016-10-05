@@ -7,16 +7,16 @@
 #include "cJSON.h"
 
 char *convertToJson(HANDSHAKE_REQ_T *handshakeRequest) {
-	cJSON *root = NULL;
-	root = cJSON_CreateObject();
-	cJSON_AddNumberToObject(root, "d2c_port", handshakeRequest->d2c_port);
-	cJSON_AddStringToObject(root, "controller_name", handshakeRequest->controller_name);
-	cJSON_AddStringToObject(root, "controller_type", handshakeRequest->controller_type);
-	cJSON_AddNumberToObject(root, "arstream2_client_stream_port", handshakeRequest->arstream2_client_stream_port);
-	cJSON_AddNumberToObject(root, "arstream2_client_control_port", handshakeRequest->arstream2_client_control_port);
-	char *ptr = cJSON_Print(root);
-	cJSON_Delete(root);
-	return ptr;
+    cJSON *root = NULL;
+    root = cJSON_CreateObject();
+    cJSON_AddNumberToObject(root, "d2c_port", handshakeRequest->d2c_port);
+    cJSON_AddStringToObject(root, "controller_name", handshakeRequest->controller_name);
+    cJSON_AddStringToObject(root, "controller_type", handshakeRequest->controller_type);
+    cJSON_AddNumberToObject(root, "arstream2_client_stream_port", handshakeRequest->arstream2_client_stream_port);
+    cJSON_AddNumberToObject(root, "arstream2_client_control_port", handshakeRequest->arstream2_client_control_port);
+    char *ptr = cJSON_Print(root);
+    cJSON_Delete(root);
+    return ptr;
 }
 
 int32_t parseJsonToHandshakeData(char *jsonStr, HANDSHAKE_DATA_T *handshakeData) {
@@ -46,45 +46,45 @@ int32_t parseJsonToHandshakeData(char *jsonStr, HANDSHAKE_DATA_T *handshakeData)
 }
 
 void * handshakeWithdrone(char *droneIp, uint16_t dronePort, HANDSHAKE_DATA_T *handshakeData) {
-	void *handshakeHandler = NULL;
-	char *jsonStr = NULL;
-	int32_t bytesSent = 0;
+    void *handshakeHandler = NULL;
+    char *jsonStr = NULL;
+    int32_t bytesSent = 0;
     char handshakeResponse[1024 * 1024] = {0};
     int32_t handshakeResLen = 0;
-	HANDSHAKE_REQ_T handshakeRequest = { 0 };
+    HANDSHAKE_REQ_T handshakeRequest = { 0 };
 
     printf("%s:%s:%d\n", __FILE__, __func__, __LINE__ );
-	handshakeHandler = initTcpClientSocket(dronePort, droneIp, NULL);
-	if (NULL == handshakeHandler) {
-		return NULL;
-	}
+    handshakeHandler = initTcpClientSocket(dronePort, droneIp, NULL);
+    if (NULL == handshakeHandler) {
+        return NULL;
+    }
 
     printf("%s:%s:%d Sending Handshake request\n", __FILE__, __func__, __LINE__ );
-	strncpy(handshakeRequest.controller_name, CONTROLLER_NAME, 64);
-	strncpy(handshakeRequest.controller_type, CONTROLLER_TYPE, 64);
-	handshakeRequest.d2c_port = D2C_PORT;
-	handshakeRequest.arstream2_client_stream_port = 5004;
-	handshakeRequest.arstream2_client_control_port = 5005;
+    strncpy(handshakeRequest.controller_name, CONTROLLER_NAME, 64);
+    strncpy(handshakeRequest.controller_type, CONTROLLER_TYPE, 64);
+    handshakeRequest.d2c_port = D2C_PORT;
+    handshakeRequest.arstream2_client_stream_port = 5004;
+    handshakeRequest.arstream2_client_control_port = 5005;
 
 
-	jsonStr = convertToJson(&handshakeRequest);
-	if (NULL == jsonStr) {
-		printf("Json parsing failed \n");
-		closeTcpClient(handshakeHandler);
-		return NULL;
-	}
+    jsonStr = convertToJson(&handshakeRequest);
+    if (NULL == jsonStr) {
+        printf("Json parsing failed \n");
+        closeTcpClient(handshakeHandler);
+        return NULL;
+    }
 
-	bytesSent = sendSyncDataToTcpServer(handshakeHandler, jsonStr, strlen(jsonStr), handshakeResponse, &handshakeResLen);
-	if (0 == bytesSent) {
-		free(jsonStr);
-		closeTcpClient(handshakeHandler);
-		return NULL;
-	}
+    bytesSent = sendSyncDataToTcpServer(handshakeHandler, jsonStr, strlen(jsonStr), handshakeResponse, &handshakeResLen);
+    if (0 == bytesSent) {
+        free(jsonStr);
+        closeTcpClient(handshakeHandler);
+        return NULL;
+    }
     printf("handshake data %s\n", handshakeResponse);
     
     parseJsonToHandshakeData(handshakeResponse, handshakeData);
     free(jsonStr);
-	return handshakeHandler;
+    return handshakeHandler;
 }
 
 

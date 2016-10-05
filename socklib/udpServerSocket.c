@@ -84,12 +84,12 @@ void *serverThread(void *args) {
             printf("ERROR in recvfrom\n");
         }
         else if (nBytes == 0) {
-        	printf("Connection closed\n");
-        	udpSocketData->isRunning = 0;
+            printf("Connection closed\n");
+            udpSocketData->isRunning = 0;
         }
         else {
-        	//printf("Received packet from %s:%d\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
-        	udpSocketData->callback(buffer, nBytes);
+            //printf("Received packet from %s:%d\n", inet_ntoa(clientaddr.sin_addr), ntohs(clientaddr.sin_port));
+            udpSocketData->callback(buffer, nBytes);
         }
     }
     pthread_exit(NULL);
