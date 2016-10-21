@@ -201,6 +201,7 @@ int32_t main(int argc, char **argv) {
     }
     printSettings(&globalArgs);
     initSignals();
+#if 0
     handshakeHandle = handshakeWithdrone(globalArgs.ipAddress, globalArgs.port, &handshakeData);
     if (NULL == handshakeHandle) {
         printf("Handshake failed. Exit\n");
@@ -212,19 +213,20 @@ int32_t main(int argc, char **argv) {
         printf("initDroneComm failed. Exit\n");
         return 0;
     }
-#if 0
    streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
+#endif
+   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, 5004, 5005, rtpData, rtcpData);
     if (NULL == streamHandle) {
         printf("Drone will not receive video stream. Exit\n");
     }
-#endif
 
+#if 0
     err = startVideoStreaming(droneHandle);
     if (err < 0) {
         printf("Start Video Streaming command failed. Exit\n");
         return 1;
     }
-
+#endif
     while (!startExit) {
         sleep(1);
     }
@@ -284,7 +286,7 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
 
 
 static void rtpData(unsigned char *buffer, int32_t bufLen) {
-//    printf("RTP Data: %d\n", bufLen);
+    printf("RTP Data: %d\n", bufLen);
 }
 
 static void rtcpData(unsigned char *buffer, int32_t bufLen) {
