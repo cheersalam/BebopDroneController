@@ -201,20 +201,21 @@ int32_t main(int argc, char **argv) {
     }
     printSettings(&globalArgs);
     initSignals();
-
+#if 0
     handshakeHandle = handshakeWithdrone(globalArgs.ipAddress, globalArgs.port, &handshakeData);
     if (NULL == handshakeHandle) {
         printf("Handshake failed. Exit\n");
         return 0;
     }
+#endif
 
-    droneHandle = initDroneComm(globalArgs.ipAddress, handshakeData.c2d_port, D2C_PORT, &streamData);
+    droneHandle = initDroneComm(globalArgs.ipAddress, C2D_PORT, D2C_PORT, &streamData);
     if (NULL == droneHandle) {
         printf("initDroneComm failed. Exit\n");
         return 0;
     }
-   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
-   //streamHandle = initDroneVideoStreams(globalArgs.ipAddress, 5004, 5005, rtpData, rtcpData);
+   //streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
+   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, RTP_PORT, RTCP_PORT, rtpData, rtcpData);
     if (NULL == streamHandle) {
         printf("Drone will not receive video stream. Exit\n");
     }

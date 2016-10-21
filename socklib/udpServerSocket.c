@@ -75,7 +75,7 @@ void *serverThread(void *args) {
     struct sockaddr_in clientaddr; /* client addr */
     
 
-    printf("%s:%s:%d Waiting for incoming messages\n", __FILE__, __func__, __LINE__);
+    printf("%s:%s:%d Waiting for incoming messages on port %hu\n", __FILE__, __func__, __LINE__, udpSocketData->port);
     addrSize = sizeof(clientaddr);
     udpSocketData->isRunning = 1;
     while (udpSocketData->isRunning) {
