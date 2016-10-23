@@ -11,9 +11,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#define CONTROLLER_NAME "toto"
-#define CONTROLLER_TYPE "tata"
-#define D2C_PORT 43210
+#define CONTROLLER_NAME "com.parrot.freeflight3"
+#define CONTROLLER_TYPE "iPhone"
+//#define D2C_PORT 54231
 
 typedef struct HANDSHAKE_DATA_T {
     int32_t status;
@@ -40,7 +40,7 @@ typedef struct HANDSHAKE_REQ_T {
     uint16_t arstream2_client_control_port;
 }HANDSHAKE_REQ_T;
 
-void *handshakeWithdrone(char *droneIp, uint16_t dronePort, HANDSHAKE_DATA_T *handshakeData);
+void *handshakeWithdrone(char *droneIp, uint16_t dronePort, uint16_t d2c_port, HANDSHAKE_DATA_T *handshakeData);
 
 int32_t startNetwork(const char *droneIpAdd, uint16_t port, int *droneCommandfd);
 int32_t startHandshake(int sockfd, const char *command, char *responseBuf, ssize_t responseBufLen);

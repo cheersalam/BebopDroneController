@@ -201,21 +201,18 @@ int32_t main(int argc, char **argv) {
     }
     printSettings(&globalArgs);
     initSignals();
-#if 0
-    handshakeHandle = handshakeWithdrone(globalArgs.ipAddress, globalArgs.port, &handshakeData);
+    handshakeHandle = handshakeWithdrone(globalArgs.ipAddress, globalArgs.port, D2C_PORT, &handshakeData);
     if (NULL == handshakeHandle) {
         printf("Handshake failed. Exit\n");
         return 0;
     }
-#endif
-
-    droneHandle = initDroneComm(globalArgs.ipAddress, C2D_PORT, D2C_PORT, &streamData);
+    droneHandle = initDroneComm(globalArgs.ipAddress, handshakeData.c2d_port, D2C_PORT, &streamData);
     if (NULL == droneHandle) {
         printf("initDroneComm failed. Exit\n");
         return 0;
     }
-   //streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
-   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, RTP_PORT, RTCP_PORT, rtpData, rtcpData);
+  streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
+   //initDroneVideoStreams(globalArgs.ipAddress, 55004, 55005, rtpData, rtcpData);
     if (NULL == streamHandle) {
         printf("Drone will not receive video stream. Exit\n");
     }
@@ -255,12 +252,12 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
     if (dataType) {
         switch (dataType) {
         case P_DATA_TYPE_ACK:
-            sendAck(droneHandle, buffer, bufLen);
+            sendAck(droneHandle, buffer);
             //printf("P_DATA_TYPE_ACK \n");
             break;
 
         case P_DATA_TYPE_DATA:
-            sendAck(droneHandle, buffer, bufLen);
+            sendAck(droneHandle, buffer);
             //printf("P_DATA_TYPE_DATA \n");
             break;
 
@@ -269,26 +266,30 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
             readXBytestoint32(buffer, bufLen, 4, &pos, &frameNum);
             //printf("frameNum = %d size = %d frameSize = %d\n", frameNum, size, bufLen - pos);
 
-            sendAck(droneHandle, buffer, bufLen);
+            sendAck(droneHandle, buffer);
             break;
 
         case P_DATA_TYPE_DATA_WITH_ACK:
             //printf("P_DATA_TYPE_DATA_WITH_ACK \n");
-            sendAck(droneHandle, buffer, bufLen);
+            sendAck(droneHandle, buffer);
             break;
 
         default:
-            printf("datatype %d not handles \n", dataType);
+            printf("datatype %d not handled \n", dataType);
         }
     }
 }
 
 
 static void rtpData(unsigned char *buffer, int32_t bufLen) {
-    printf("RTP Data: %d\n", bufLen);
+    int x = buffer[1];
+    x = x + bufLen;
+    //printf("RTP Data: %d\n", bufLen);
 }
 
 static void rtcpData(unsigned char *buffer, int32_t bufLen) {
-  //  printf("RTCP data received %d\n", bufLen);
+    int x = buffer[1];
+    x = x + bufLen;
+  //printf("RTCP data received %d\n", bufLen);
 }
 

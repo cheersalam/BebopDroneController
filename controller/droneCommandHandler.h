@@ -27,7 +27,7 @@ typedef struct COMMAND_DATA_T {
 void *startDroneCommandHandler(unsigned char *droneIp, uint16_t dronePort);
 void *initDroneComm(char *droneIp, uint16_t commandPort, uint16_t receiverPort, RECEIVER_CB receiverCallback);
 int32_t startVideoStreaming(void *handle);
-void sendAck(void *handle, unsigned char *buffer, int32_t bufLen);
+void sendAck(void *handle, unsigned char *buffer);
 void closeDroneComm(void *handle);
 
 #endif //DRONE_COMMAND_HANDLER_H

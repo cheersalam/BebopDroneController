@@ -14,6 +14,8 @@ char *convertToJson(HANDSHAKE_REQ_T *handshakeRequest) {
     cJSON_AddStringToObject(root, "controller_type", handshakeRequest->controller_type);
     cJSON_AddNumberToObject(root, "arstream2_client_stream_port", handshakeRequest->arstream2_client_stream_port);
     cJSON_AddNumberToObject(root, "arstream2_client_control_port", handshakeRequest->arstream2_client_control_port);
+    cJSON_AddNumberToObject(root, "qos_mode", 1);
+    cJSON_AddNumberToObject(root, "arstream2_supported_metadata_version", 1);
     char *ptr = cJSON_Print(root);
     cJSON_Delete(root);
     return ptr;
@@ -30,8 +32,8 @@ int32_t parseJsonToHandshakeData(char *jsonStr, HANDSHAKE_DATA_T *handshakeData)
     handshakeData->arstream_fragment_size = cJSON_GetObjectItem(root, "arstream_fragment_size")->valueint;
     handshakeData->arstream_fragment_maximum_number = cJSON_GetObjectItem(root, "arstream_fragment_maximum_number")->valueint;
     handshakeData->arstream_max_ack_interval = cJSON_GetObjectItem(root, "arstream_max_ack_interval")->valueint;
-    handshakeData->c2d_update_port = cJSON_GetObjectItem(root, "c2d_update_port")->valueint;
-    handshakeData->c2d_user_port = cJSON_GetObjectItem(root, "c2d_user_port")->valueint;
+    handshakeData->c2d_update_port = cJSON_GetObjectItem(root, "c2d_port")->valueint;
+//    handshakeData->c2d_user_port = cJSON_GetObjectItem(root, "c2d_user_port")->valueint;
     if ( NULL != cJSON_GetObjectItem(root, "arstream2_server_stream_port"))
        handshakeData->arstream2_server_stream_port = cJSON_GetObjectItem(root, "arstream2_server_stream_port")->valueint;
     if ( NULL != cJSON_GetObjectItem(root, "arstream2_server_control_port"))
@@ -45,7 +47,7 @@ int32_t parseJsonToHandshakeData(char *jsonStr, HANDSHAKE_DATA_T *handshakeData)
     return 0;
 }
 
-void * handshakeWithdrone(char *droneIp, uint16_t dronePort, HANDSHAKE_DATA_T *handshakeData) {
+void * handshakeWithdrone(char *droneIp, uint16_t dronePort, uint16_t d2c_port, HANDSHAKE_DATA_T *handshakeData) {
     void *handshakeHandler = NULL;
     char *jsonStr = NULL;
     int32_t bytesSent = 0;
@@ -62,9 +64,9 @@ void * handshakeWithdrone(char *droneIp, uint16_t dronePort, HANDSHAKE_DATA_T *h
     printf("%s:%s:%d Sending Handshake request\n", __FILE__, __func__, __LINE__ );
     strncpy(handshakeRequest.controller_name, CONTROLLER_NAME, 64);
     strncpy(handshakeRequest.controller_type, CONTROLLER_TYPE, 64);
-    handshakeRequest.d2c_port = D2C_PORT;
-    handshakeRequest.arstream2_client_stream_port = 5004;
-    handshakeRequest.arstream2_client_control_port = 5005;
+    handshakeRequest.d2c_port = d2c_port;
+    handshakeRequest.arstream2_client_stream_port = 55004;
+    handshakeRequest.arstream2_client_control_port = 55005;
 
 
     jsonStr = convertToJson(&handshakeRequest);
