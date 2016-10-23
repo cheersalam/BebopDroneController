@@ -212,7 +212,7 @@ int32_t main(int argc, char **argv) {
         return 0;
     }
   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
-   initDroneVideoStreams(globalArgs.ipAddress, 55004, 55005, rtpData, rtcpData);
+   //initDroneVideoStreams(globalArgs.ipAddress, 55004, 55005, rtpData, rtcpData);
     if (NULL == streamHandle) {
         printf("Drone will not receive video stream. Exit\n");
     }
