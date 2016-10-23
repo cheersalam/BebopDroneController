@@ -108,7 +108,7 @@ int32_t sendUdpDataToClient(void *handle, void *client, char *buffer, int32_t bu
     addrSize = sizeof(struct sockaddr_in);
     nBytes = sendto(udpSocketData->fd, buffer, bufLen, 0, (const struct sockaddr *)clientaddr, addrSize);
     if (nBytes < 0) {
-        printf("ERROR in sendto\n");
+        printf("ERROR in sendto port = %hu buffer = %s\n", udpSocketData->port,  buffer);
     }
     return nBytes;
 }
