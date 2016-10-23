@@ -212,7 +212,7 @@ int32_t main(int argc, char **argv) {
         return 0;
     }
   streamHandle = initDroneVideoStreams(globalArgs.ipAddress, handshakeData.arstream2_server_stream_port, handshakeData.arstream2_server_control_port, rtpData, rtcpData);
-   //initDroneVideoStreams(globalArgs.ipAddress, 55004, 55005, rtpData, rtcpData);
+   initDroneVideoStreams(globalArgs.ipAddress, 55004, 55005, rtpData, rtcpData);
     if (NULL == streamHandle) {
         printf("Drone will not receive video stream. Exit\n");
     }
@@ -252,7 +252,7 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
     if (dataType) {
         switch (dataType) {
         case P_DATA_TYPE_ACK:
-            sendAck(droneHandle, buffer);
+            //sendAck(droneHandle, buffer);
             //printf("P_DATA_TYPE_ACK \n");
             break;
 
@@ -284,12 +284,12 @@ static void streamData(unsigned char *buffer, int32_t bufLen) {
 static void rtpData(unsigned char *buffer, int32_t bufLen) {
     int x = buffer[1];
     x = x + bufLen;
-    //printf("RTP Data: %d\n", bufLen);
+//    printf("RTP Data: %d\n", bufLen);
 }
 
 static void rtcpData(unsigned char *buffer, int32_t bufLen) {
     int x = buffer[1];
     x = x + bufLen;
-  //printf("RTCP data received %d\n", bufLen);
+ // printf("RTCP data received %d\n", bufLen);
 }
 
